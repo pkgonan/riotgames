@@ -15,6 +15,7 @@ public class CalculatorController {
     @RequestMapping(value = "calculate", method = RequestMethod.POST)
     public @ResponseBody String insertDataMap(@RequestBody MultiValueMap<String, String> body) {
         final String calculationResult = calculationService.calculate(body.keySet().toString().replace("[", "").replace("]", "").trim());
+        System.out.println(body.keySet().toString().replace("[", "").replace("]", "") + " = " + calculationResult);
 
         return calculationResult;
     }
