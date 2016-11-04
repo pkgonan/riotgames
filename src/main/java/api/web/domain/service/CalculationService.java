@@ -4,15 +4,30 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class CalculationService {
+    final static double POSITIVE_ZERO = 0.000000;
+    final static double NEGATIVE_ZERO = -0.000000;
+
     public String calculate(String expression) {
         try {
-            return String.format("%.6f", eval(expression));
+            double nonConvertedFormatData = evaluateExpression(expression);
+            String convertedFormatData = convertFormat(nonConvertedFormatData);
+
+            return convertedFormatData;
         } catch (Exception e) {
             return "ERROR";
         }
     }
 
-    private double eval(final String str) throws Exception{
+    private String convertFormat(double nonConvertedFormatData) {
+        return String.format("%.6f", nonConvertedFormatData);
+    }
+
+    // BNF & Parser Tree
+    // Grammar :
+    // expression = term | expression `+` term | expression `-` term
+    // term = factor | term `*` factor | term `/` factor
+    // factor = `+` factor | `-` factor | `(` expression `)` | number | functionName factor | factor `^` factor
+    private double evaluateExpression(final String str) throws Exception {
         return new Object() {
             int pos = -1, ch;
 
@@ -35,19 +50,13 @@ public class CalculationService {
                 double x = parseExpression();
                 if (pos < str.length()) throw new RuntimeException("Unexpected: " + (char)ch);
                 if (x == Double.POSITIVE_INFINITY) throw new ArithmeticException();
-                if (x == -0.000000) x = 0.000000;
+                if (x == NEGATIVE_ZERO) x = POSITIVE_ZERO;
                 return x;
             }
 
-            // Grammar:
-            // expression = term | expression `+` term | expression `-` term
-            // term = factor | term `*` factor | term `/` factor
-            // factor = `+` factor | `-` factor | `(` expression `)`
-            //        | number | functionName factor | factor `^` factor
-
             double parseExpression() {
                 double x = parseTerm();
-                for (;;) {
+                while(true) {
                     if      (eat('+')) x += parseTerm(); // addition
                     else if (eat('-')) x -= parseTerm(); // subtraction
                     else return x;
@@ -56,7 +65,7 @@ public class CalculationService {
 
             double parseTerm() {
                 double x = parseFactor();
-                for (;;) {
+                while(true) {
                     if      (eat('*')) x *= parseFactor(); // multiplication
                     else if (eat('/')) x /= parseFactor(); // division
                     else return x;
@@ -64,10 +73,10 @@ public class CalculationService {
             }
 
             double parseFactor() {
-                if (eat('+')) throw new RuntimeException(); //unary plus
+                if (eat('+')) throw new RuntimeException(); // unary plus
                 if (eat('-')) return -parseFactor(); // unary minus
 
-                double x = 0.0;
+                double x;
                 int startPos = this.pos;
                 if (eat('(')) { // parentheses
                     x = parseExpression();

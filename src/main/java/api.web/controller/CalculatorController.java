@@ -14,7 +14,7 @@ public class CalculatorController {
     @CrossOrigin(origins = "http://coding.recruit.leagueoflegends.co.kr:8080")
     @RequestMapping(value = "calculate", method = RequestMethod.POST)
     public @ResponseBody String insertDataMap(@RequestBody MultiValueMap<String, String> body) {
-        final String calculationResult = calculationService.calculate(body.keySet().toString().replace("[", "").replace("]", "").trim());
+        String calculationResult = calculationService.calculate(body.keySet().toString().replace("[", "").replace("]", "").trim());
 
         return calculationResult;
     }
