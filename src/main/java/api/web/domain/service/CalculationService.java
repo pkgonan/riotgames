@@ -22,18 +22,11 @@ public class CalculationService {
         return String.format("%.6f", nonConvertedFormatData);
     }
 
-    // BNF & Parser Tree
-    // Grammar :
-    // expression = term | expression `+` term | expression `-` term
-    // term = factor | term `*` factor | term `/` factor
-    // factor = `+` factor | `-` factor | `(` expression `)` | number | functionName factor | factor `^` factor
     private double evaluateExpression(final String str) throws Exception {
         return new Object() {
             int pos = -1, ch;
 
-            void nextChar() {
-                ch = (++pos < str.length()) ? str.charAt(pos) : -1;
-            }
+            void nextChar() { ch = (++pos < str.length()) ? str.charAt(pos) : -1; }
 
             boolean eat(int charToEat) {
                 while (ch == ' ') nextChar();
@@ -45,15 +38,20 @@ public class CalculationService {
             }
 
             double parse() {
-                if(str.equals("pi")) return Math.PI;
+                if (str.equals("pi")) return Math.PI;
                 nextChar();
                 double x = parseExpression();
-                if (pos < str.length()) throw new RuntimeException("Unexpected: " + (char)ch);
+                if (pos < str.length()) throw new RuntimeException();
                 if (x == Double.POSITIVE_INFINITY) throw new ArithmeticException();
                 if (x == NEGATIVE_ZERO) x = POSITIVE_ZERO;
                 return x;
             }
 
+            // BNF & Parser Tree
+            // Grammar :
+            // expression = term | expression `+` term | expression `-` term
+            // term = factor | term `*` factor | term `/` factor
+            // factor = `+` factor | `-` factor | `(` expression `)` | number | functionName factor | factor `^` factor
             double parseExpression() {
                 double x = parseTerm();
                 while(true) {
@@ -84,12 +82,12 @@ public class CalculationService {
                 } else if ((ch >= '0' && ch <= '9') || ch == '.') { // numbers
                     while ((ch >= '0' && ch <= '9') || ch == '.') nextChar();
                     x = Double.parseDouble(str.substring(startPos, this.pos));
-                } else if (ch >= 'a' && ch <= 'z') { // functions
+                } else if (ch >= 'a' && ch <= 'z') { // functions ex) e
                     while (ch >= 'a' && ch <= 'z') nextChar();
                     String func = str.substring(startPos, this.pos);
                     if (func.equals("e")) x = Math.E;
                     else throw new RuntimeException();
-                } else throw new RuntimeException("Unexpected");
+                } else throw new RuntimeException();
 
                 if (eat('^')) x = Math.pow(x, parseFactor()); // exponentiation
 
