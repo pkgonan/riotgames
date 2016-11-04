@@ -64,7 +64,7 @@ public class CalculationService {
             }
 
             double parseFactor() {
-                if (eat('+')) throw new RuntimeException();
+                if (eat('+')) throw new RuntimeException(); //unary plus
                 if (eat('-')) return -parseFactor(); // unary minus
 
                 double x = 0.0;
